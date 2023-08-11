@@ -1,3 +1,2 @@
-TKinter 
 cryptography 
-sql
+sqlite3

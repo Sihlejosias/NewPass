@@ -5,6 +5,7 @@ Offline password manager, written in python. Using SQLite database, encrypted an
 ## How to use use?
         git clone https://github.com/Sihlejosias/Password_Manager.git
         cd Password_Manager 
+        pip install -r requirements.txt
 
 #### For the first time use run
         python setup.py 
@@ -22,7 +23,6 @@ With setup.py you will be required to setup a master password and the initial se
 [ ] Password Decrypter  
 [ ] Password Generator  
 [ ] Display passwords  
-[ ] 
 
 # Notes:
 
