@@ -1,6 +1,6 @@
 #Import Tkinter here
 
-class PMGUI():
+class PMGUI:
     pass
 
 if __name__ == "__main__":

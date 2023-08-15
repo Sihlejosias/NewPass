@@ -1,4 +1,4 @@
-class passwordManager():
+class passwordManager:
     pass
 
 if __name__ == "__main__":

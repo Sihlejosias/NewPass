@@ -1,6 +1,6 @@
 # Password Manager
 
-Offline password manager, written in python. Using SQLite database, encrypted and locked with a master password.
+Light offline password manager, written in python. Using SQLite database, encrypted and locked with a master password.
 
 ## How to use use?
         git clone https://github.com/Sihlejosias/Password_Manager.git
