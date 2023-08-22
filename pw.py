@@ -8,42 +8,51 @@ import hashlib
 class passwordManager:
     def __init__(self):
         self.users = os.getlogin()
-
+    
         if platform == "linux":
-            self.conn = sqlite3.connect(f"/home/{self.users}/.config/passwordM.db")
+            self.conn = sqlite3.connect(f"/home/{self.users}/.config/db.db")
         elif platform == "win32":
-            self.conn = sqlite3.connect("C:\Programs/.passwordM.db")
+            self.conn = sqlite3.connect("C:\Programs/.newpass/db.db")
         elif platform == "darwin":
             self.conn = sqlite3.connect("")
         else:
             print("Failed to create database!")
 
         self.cur = self.conn.cursor()
+
+        self.key = self.cur.execute("SELECT key FROM encry_key").fetchone()[0]
     
     def getMasterPassw(self):
         passw = self.cur.execute("SELECT password FROM users WHERE username=?", (self.users,)).fetchone()
         
         return passw[0]
 
-    def getKey(self):
-        self.encryptKey = self.cur.execute("SELECT key FROM encry_key").fetchone()
-        
-        return self.encryptKey[0]
-        
     def loadPass(self):
-        #loads and encrypt password to database
-        pass
+        site = input("Enter site name: ")
+        username = input("Enter site username: ")
+        email = input("Enter email: ")
+        passwword = getpass("Enter site password: ")
+
+        passwd = Fernet(self.key).encrypt(passwword.encode())
+
+        self.cur.execute("INSERT INTO passwords VALUES (?, ?, ?, ?)", (site, username, email, passwd))
 
     def viewPass(self):
-        #fetch and decrypt password for database for viewing and copy
-        pass
+        site = input("Enter site name: ")
+
+        password = self.cur.execute('SELECT password FROM passwords WHERE site=(?)', (site,)).fetchone()[0]
+        passwrd = Fernet(self.key).decrypt(password).decode()
+
+        print(passwrd)
+
 
     def closeCommit(self):
+        self.conn.commit()
         self.conn.close()
 
 if __name__ == "__main__":
     run = passwordManager()
-    print("1. Get password\t", "2. Load new password: ")
+    print("1. Get password\t", "2. Load new password\t", "3. Generate new password\n", "4. Get username\t", "5. Get email address")
     menu = int(input("Enter option: "))
 
     if menu == 1:
@@ -63,6 +72,6 @@ if __name__ == "__main__":
             print(f"Incorrect password for {os.getlogin()}")
          
     else:
-        print("Invalid option!")
+        raise NotImplementedError("Code not correctly implemented!")
 
     run.closeCommit()

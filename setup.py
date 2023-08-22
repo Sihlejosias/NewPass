@@ -15,9 +15,9 @@ class setup:
         self.key = None
 
         if platform == "linux":
-            self.conn = sqlite3.connect(f"/home/{self.users}/.config/passwordM.db")
+            self.conn = sqlite3.connect(f"/home/{self.users}/.config/db.db")
         elif platform == "win32":
-            self.conn = sqlite3.connect(f"C:\Programs/.passwordM.db")
+            self.conn = sqlite3.connect(f"C:\Programs/.newpass/db.db")
         elif platform == "darwin":
             self.conn = sqlite3.connect(f"")
         else:
@@ -44,7 +44,7 @@ class setup:
 
         print(self.key)
 
-        self.cur.execute('INSERT INTO encry_key VALUES ()', (self.key,clear))
+        self.cur.execute('INSERT INTO encry_key VALUES (?)', (self.key,))
     
     def closeCommit(self):
         self.conn.commit()
