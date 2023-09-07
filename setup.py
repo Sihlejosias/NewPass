@@ -42,8 +42,6 @@ class setup:
     def keySetup(self):
         self.key = Fernet.generate_key()
 
-        print(self.key)
-
         self.cur.execute('INSERT INTO encry_key VALUES (?)', (self.key,))
     
     def closeCommit(self):
@@ -56,3 +54,4 @@ if __name__ == "__main__":
     run.createMaster()
     run.keySetup()
     run.closeCommit()
+    print("Successfully Setup and ready!!")

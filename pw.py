@@ -1,8 +1,12 @@
 from cryptography.fernet import Fernet
-import sqlite3
-from sys import platform
-import os
 from getpass import getpass
+from sys import platform
+import pyperclip
+import sqlite3
+import string
+import secrets
+import os
+
 import hashlib
 
 class passwordManager:
@@ -40,11 +44,30 @@ class passwordManager:
     def viewPass(self):
         site = input("Enter site name: ")
 
-        password = self.cur.execute('SELECT password FROM passwords WHERE site=(?)', (site,)).fetchone()[0]
-        passwrd = Fernet(self.key).decrypt(password).decode()
+        getPassword = self.cur.execute('SELECT password FROM passwords WHERE site=(?)', (site,)).fetchone()[0]
+        passwrd = Fernet(self.key).decrypt(getPassword).decode()
 
-        print(passwrd)
+        pyperclip.copy(passwrd)
 
+        print("Password temporary copied to clipboard!!")
+
+    def generatePass(self):
+        site = input("Website name: ")
+        username = input("Username: ")
+        email = input("Email address: ")
+        lenth = input("How long: ")
+
+        char = string.ascii_letters + string.digits + string.punctuation
+        if lenth == '':
+            genPass = "".join(secrets.choice(char) for i in range(8))
+        else:
+            lenth = int(lenth)
+            genPass = "".join(secrets.choice(char) for i in range(lenth))
+
+        pas = Fernet(self.key).encrypt(genPass.encode())
+        self.cur.execute("INSERT INTO passwords VALUES (?, ?, ?, ?)", (site, username, email, pas))
+
+        print(f"Generated password for website {site} with username {username} is {genPass}")
 
     def closeCommit(self):
         self.conn.commit()
@@ -52,7 +75,7 @@ class passwordManager:
 
 if __name__ == "__main__":
     run = passwordManager()
-    print("1. Get password\t", "2. Load new password\t", "3. Generate new password\n", "4. Get username\t", "5. Get email address")
+    print("1. Get password\t", "2. Load new password\t", "3. Generate new password\n", "4. Get username\t", "5. Get email address\t", "6. Delete Password")
     menu = int(input("Enter option: "))
 
     if menu == 1:
@@ -70,7 +93,14 @@ if __name__ == "__main__":
             run.loadPass()
         else: 
             print(f"Incorrect password for {os.getlogin()}")
-         
+    
+    elif menu == 3:
+        password = hashlib.sha256(getpass(f"Password for {os.getlogin()}: ").encode("utf-8")).hexdigest()
+
+        if password == run.getMasterPassw():
+            run.generatePass()
+        else: 
+            print(f"Incorrect password for {os.getlogin()}")
     else:
         raise NotImplementedError("Code not correctly implemented!")
 
