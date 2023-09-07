@@ -1,2 +1,3 @@
 cryptography 
 sqlite3
+pyperclip

@@ -3,8 +3,8 @@
 Light offline password manager, written in python. Using SQLite database, encrypted and locked with a master password.
 
 ## How to use use?
-        git clone https://github.com/Sihlejosias/Password_Manager.git
-        cd Password_Manager 
+        git clone https://github.com/Sihlejosias/Newpass.git
+        cd Newpass 
         pip install -r requirements.txt
 
 #### For the first time use run
@@ -14,15 +14,21 @@ With setup.py you will be required to setup a master password and the initial se
 
 #### Therefore, run to add, delete and modify 
 
-        python main.py
+        python pw.py
 
 # Features 
-[ ] Login  
-[ ] Database  
-[ ] Password Encrypter  
-[ ] Password Decrypter  
-[ ] Password Generator  
-[ ] Display passwords  
+[x] Login  
+[x] Database  
+[x] Password Encrypter  
+[x] Password Decrypter  
+[x] Password Generator  
+[ ] copy password to clipboard
+[ ] get username
+[ ] get emial
+[ ] delete passwords 
+[ ] Edit password 
+[ ] GUI (graphical user interface)
+[ ] autofil
 
 # Notes:
 
