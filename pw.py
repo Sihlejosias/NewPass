@@ -69,6 +69,20 @@ class passwordManager:
 
         print(f"Generated password for website {site} with username {username} is {genPass}")
 
+    def getUsername(self):
+        site = input("Enter site name: ")
+
+        getUser = self.cur.execute('SELECT username FROM passwords WHERE site=(?)', (site,)).fetchone()[0]
+
+        print(f"Username for {site}: {getUser}")
+    
+    def getEmail(self):
+        site = input("Enter site name: ")
+
+        getmail = self.cur.execute('SELECT email FROM passwords WHERE site=(?)', (site,)).fetchone()[0]
+
+        print(f"Username for {site}: {getmail}")
+
     def closeCommit(self):
         self.conn.commit()
         self.conn.close()
@@ -100,6 +114,22 @@ if __name__ == "__main__":
         if password == run.getMasterPassw():
             run.generatePass()
         else: 
+            print(f"Incorrect password for {os.getlogin()}")
+    
+    elif menu == 4:
+        password = hashlib.sha256(getpass(f"Password for {os.getlogin()}: ").encode("utf-8")).hexdigest()
+
+        if password == run.getMasterPassw():
+            run.getUsername()
+        else: 
+            print(f"Incorrect password for {os.getlogin()}")
+    
+    elif menu == 5:
+        password = hashlib.sha256(getpass(f'Password for {os.getlogin()}: ').encode("utf-8")).hexdigest()
+
+        if password == run.getMasterPassw():
+            run.getEmail()
+        else:
             print(f"Incorrect password for {os.getlogin()}")
     else:
         raise NotImplementedError("Code not correctly implemented!")

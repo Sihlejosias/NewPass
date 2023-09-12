@@ -22,13 +22,13 @@ With setup.py you will be required to setup a master password and the initial se
 [x] Password Encrypter  
 [x] Password Decrypter  
 [x] Password Generator  
-[ ] copy password to clipboard
-[ ] get username
-[ ] get emial
-[ ] delete passwords 
-[ ] Edit password 
-[ ] GUI (graphical user interface)
-[ ] autofil
+[x] copy password to clipboard  
+[ ] get username  
+[ ] get emial  
+[ ] delete passwords  
+[ ] Edit password  
+[ ] GUI (graphical user interface)  
+[ ] autofil  
 
 # Notes:
 
