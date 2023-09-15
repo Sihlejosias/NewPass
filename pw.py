@@ -83,6 +83,19 @@ class passwordManager:
 
         print(f"Username for {site}: {getmail}")
 
+    def deletePs(self):
+        site  = input("Enter site name: ")
+
+        self.cur.execute("DELETE FROM passwords WHERE site=(?)", (site,)).fetchone()[0]
+
+        print(f'User informtion for {site} have been deleted')
+
+    def PassHash(self):
+        password = getpass(f"Password for {os.getlogin()}: ").encode("utf-8")
+        password = hashlib.sha256(password).hexdigest()
+        
+        return password
+
     def closeCommit(self):
         self.conn.commit()
         self.conn.close()
@@ -92,45 +105,44 @@ if __name__ == "__main__":
     print("1. Get password\t", "2. Load new password\t", "3. Generate new password\n", "4. Get username\t", "5. Get email address\t", "6. Delete Password")
     menu = int(input("Enter option: "))
 
-    if menu == 1:
-        password = hashlib.sha256(getpass(f"Password for {os.getlogin()}: ").encode("utf-8")).hexdigest()
+    password = run.PassHash()
 
+    if menu == 1:
         if password == run.getMasterPassw():
             run.viewPass()
         else: 
             print(f"Incorrect password for {os.getlogin()}")
 
     elif menu == 2:
-        password = hashlib.sha256(getpass(f"Password for {os.getlogin()}: ").encode("utf-8")).hexdigest()
-
         if password == run.getMasterPassw():
             run.loadPass()
         else: 
             print(f"Incorrect password for {os.getlogin()}")
     
     elif menu == 3:
-        password = hashlib.sha256(getpass(f"Password for {os.getlogin()}: ").encode("utf-8")).hexdigest()
-
         if password == run.getMasterPassw():
             run.generatePass()
         else: 
             print(f"Incorrect password for {os.getlogin()}")
     
     elif menu == 4:
-        password = hashlib.sha256(getpass(f"Password for {os.getlogin()}: ").encode("utf-8")).hexdigest()
-
         if password == run.getMasterPassw():
             run.getUsername()
         else: 
             print(f"Incorrect password for {os.getlogin()}")
     
     elif menu == 5:
-        password = hashlib.sha256(getpass(f'Password for {os.getlogin()}: ').encode("utf-8")).hexdigest()
-
         if password == run.getMasterPassw():
             run.getEmail()
         else:
             print(f"Incorrect password for {os.getlogin()}")
+    
+    elif menu == 6:
+        if password == run.getMasterPassw():
+            run.deletePs()
+        else:
+            print(f"Incorrect password for {os.getlogin()}")
+    
     else:
         raise NotImplementedError("Code not correctly implemented!")
 
