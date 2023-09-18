@@ -2,12 +2,11 @@ from cryptography.fernet import Fernet
 from getpass import getpass
 from sys import platform
 import pyperclip
+import hashlib
 import sqlite3
 import string
 import secrets
 import os
-
-import hashlib
 
 class passwordManager:
     def __init__(self):
@@ -43,13 +42,15 @@ class passwordManager:
 
     def viewPass(self):
         site = input("Enter site name: ")
+        if site == "":
+            print("Please enter site name!")
+        else:
+            getPassword = self.cur.execute('SELECT password FROM passwords WHERE site=(?)', (site,)).fetchone()[0]
+            passwrd = Fernet(self.key).decrypt(getPassword).decode()
 
-        getPassword = self.cur.execute('SELECT password FROM passwords WHERE site=(?)', (site,)).fetchone()[0]
-        passwrd = Fernet(self.key).decrypt(getPassword).decode()
+            pyperclip.copy(passwrd)
 
-        pyperclip.copy(passwrd)
-
-        print("Password temporary copied to clipboard!!")
+            print("Password temporary copied to clipboard!!")
 
     def generatePass(self):
         site = input("Website name: ")
@@ -71,27 +72,62 @@ class passwordManager:
 
     def getUsername(self):
         site = input("Enter site name: ")
+        if site == "":
+            print("Please enter site name!")
+        else:
+            getUser = self.cur.execute('SELECT username FROM passwords WHERE site=(?)', (site,)).fetchone()[0]
 
-        getUser = self.cur.execute('SELECT username FROM passwords WHERE site=(?)', (site,)).fetchone()[0]
-
-        print(f"Username for {site}: {getUser}")
+            print(f"Username for {site}: {getUser}")
     
     def getEmail(self):
         site = input("Enter site name: ")
+        if site == "":
+            print("Please enter site name!")
+        else:
+            getmail = self.cur.execute('SELECT email FROM passwords WHERE site=(?)', (site,)).fetchone()[0]
 
-        getmail = self.cur.execute('SELECT email FROM passwords WHERE site=(?)', (site,)).fetchone()[0]
-
-        print(f"Username for {site}: {getmail}")
+            print(f"Username for {site}: {getmail}")
 
     def deletePs(self):
         site  = input("Enter site name: ")
+        if site  == "":
+            print("PLease enter site name!")
+        else:
+            self.cur.execute("DELETE FROM passwords WHERE site=(?)", (site,)).fetchone()[0]
 
-        self.cur.execute("DELETE FROM passwords WHERE site=(?)", (site,)).fetchone()[0]
+            print(f'User informtion for {site} have been deleted')
 
-        print(f'User informtion for {site} have been deleted')
+    def editEntry(self):
+        site = input("Enter site name: ")
+        if site == "":
+            print("Please enter site name!")
+        else:
+            username = input("Update username: ")
+            if username == "":
+                old = self.cur.execute("SELECT username FROM passwords WHERE site=(?)", (site,)).fetchone()[0]
+                print(f"Userneme: {old} not changed!")
+            else:
+                self.cur.execute("UPDATE passwords SET username=(?) WHERE site=(?)", (username, site))
+                print("Username Updated!")
+            
+            email = input("Update email: ")
+            if email == "":
+                old = self.cur.execute("SELECT email FROM passwords WHERE site=(?)", (site,)).fetchone()[0]
+                print(f"Email Address: {old} not changed!")
+            else:
+                self.cur.execute("UPDATE passwords SET email=(?) WHERE site=(?)", (email, site))
+                print("Email Address Updated!")
+            password = getpass("Update passowrd: ")
+            if password == "":
+                print(f"Password not changed!")
+            else:
+                hashPas = Fernet(self.key).encrypt(password.encode())
+
+                self.cur.execute("UPDATE passwords SET password=(?) WHERE site=(?)", (hashPas, site))
+                print("Password Updated!")
 
     def PassHash(self):
-        password = getpass(f"Password for {os.getlogin()}: ").encode("utf-8")
+        password = getpass(f"Password for {self.users}: ").encode("utf-8")
         password = hashlib.sha256(password).hexdigest()
         
         return password
@@ -102,47 +138,54 @@ class passwordManager:
 
 if __name__ == "__main__":
     run = passwordManager()
-    print("1. Get password\t", "2. Load new password\t", "3. Generate new password\n", "4. Get username\t", "5. Get email address\t", "6. Delete Password")
+    print("1. Get password\t", "2. Load new password\t", "3. Generate new password") 
+    print("4. Get username\t", "5. Get email address\t", "6. Delete Password")
+    print("7. Edit password\n")
     menu = int(input("Enter option: "))
 
     password = run.PassHash()
+    user = os.getlogin()
 
     if menu == 1:
         if password == run.getMasterPassw():
             run.viewPass()
         else: 
-            print(f"Incorrect password for {os.getlogin()}")
+            print(f"Incorrect password for {user}")
 
     elif menu == 2:
         if password == run.getMasterPassw():
             run.loadPass()
         else: 
-            print(f"Incorrect password for {os.getlogin()}")
+            print(f"Incorrect password for {user}")
     
     elif menu == 3:
         if password == run.getMasterPassw():
             run.generatePass()
         else: 
-            print(f"Incorrect password for {os.getlogin()}")
+            print(f"Incorrect password for {user}")
     
     elif menu == 4:
         if password == run.getMasterPassw():
             run.getUsername()
         else: 
-            print(f"Incorrect password for {os.getlogin()}")
+            print(f"Incorrect password for {user}")
     
     elif menu == 5:
         if password == run.getMasterPassw():
             run.getEmail()
         else:
-            print(f"Incorrect password for {os.getlogin()}")
+            print(f"Incorrect password for {user}")
     
     elif menu == 6:
         if password == run.getMasterPassw():
             run.deletePs()
         else:
-            print(f"Incorrect password for {os.getlogin()}")
-    
+            print(f"Incorrect password for {user}")
+    elif menu == 7:
+        if password == run.getMasterPassw():
+            run.editEntry()
+        else:
+            print(f"Incorrect password for {user}")
     else:
         raise NotImplementedError("Code not correctly implemented!")
 
