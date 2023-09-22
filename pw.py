@@ -14,6 +14,7 @@ class passwordManager:
     
         if platform == "linux":
             self.conn = sqlite3.connect(f"/home/{self.users}/.config/db.db")
+            self.encr = sqlite3.connect(f"/home/{self.users}/.config/keys.db")
         elif platform == "win32":
             self.conn = sqlite3.connect("C:\Programs/.newpass/db.db")
         elif platform == "darwin":
@@ -22,8 +23,10 @@ class passwordManager:
             print("Failed to create database!")
 
         self.cur = self.conn.cursor()
+        self.d = self.encr.cursor()
 
-        self.key = self.cur.execute("SELECT key FROM encry_key").fetchone()[0]
+        self.key = self.d.execute("SELECT key FROM encry_key").fetchone()[0]
+        self.token = self.d.execute("SELECT token FROM salt").fetchone()[0]
     
     def getMasterPassw(self):
         passw = self.cur.execute("SELECT password FROM users WHERE username=?", (self.users,)).fetchone()
@@ -127,14 +130,18 @@ class passwordManager:
                 print("Password Updated!")
 
     def PassHash(self):
-        password = getpass(f"Password for {self.users}: ").encode("utf-8")
-        password = hashlib.sha256(password).hexdigest()
+        
+        password = getpass("Master Password: ")
+        password += self.token
+        password = hashlib.sha512(password.encode("utf-8")).hexdigest()
         
         return password
 
     def closeCommit(self):
         self.conn.commit()
+        self.encr.commit()
         self.conn.close()
+        self.encr.close()
 
 if __name__ == "__main__":
     run = passwordManager()
