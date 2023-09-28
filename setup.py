@@ -22,12 +22,14 @@ class setup:
         self.key = None
 
         if platform == "linux":
-            self.conn = sqlite3.connect(f"/home/{self.users}/.config/db.db")
+            self.conn = sqlite3.connect(f"/home/{self.users}/.config/passdb.db")
             self.encr = sqlite3.connect(f"/home/{self.users}/.config/keys.db")
         elif platform == "win32":
-            self.conn = sqlite3.connect(f"C:\Programs/.newpass/db.db")
+            self.conn = sqlite3.connect("C:\Programs/.newpass/passdb.db")
+            self.encr = sqlite3.connect("C:\Programs/.newpass/keys.db")
         elif platform == "darwin":
-            self.conn = sqlite3.connect(f"")
+            self.conn = sqlite3.connect(f"/Users/{self.users}/.newpass/passdb.db")
+            self.encr = sqlite3.connect(f"/Users/{self.users}/.newpass/keys.db")
         else:
             print("Failed to create database!")
 
@@ -37,7 +39,7 @@ class setup:
         self.d = self.encr.cursor()
 
         self.cur.execute("""CREATE TABLE IF NOT EXISTS users (username text NOT NULL, password text NOT NULL)""")
- 
+
         self.d.execute("""CREATE TABLE IF NOT EXISTS encry_key (key text NOT NULL)""")
         
         self.d.execute("""CREATE TABLE IF NOT EXISTS salt (token text NOT NULL)""")

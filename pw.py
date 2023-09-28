@@ -13,21 +13,23 @@ class passwordManager:
         self.users = os.getlogin()
     
         if platform == "linux":
-            self.conn = sqlite3.connect(f"/home/{self.users}/.config/db.db")
+            self.conn = sqlite3.connect(f"/home/{self.users}/.config/passdb.db")
             self.encr = sqlite3.connect(f"/home/{self.users}/.config/keys.db")
         elif platform == "win32":
-            self.conn = sqlite3.connect("C:\Programs/.newpass/db.db")
+            self.conn = sqlite3.connect("C:\Programs/.newpass/passdb.db")
+            self.encr = sqlite3.connect("C:\Programs/.newpass/keys.db")
         elif platform == "darwin":
-            self.conn = sqlite3.connect("")
+            self.conn = sqlite3.connect(f"/Users/{self.users}/.newpass/passdb.db")
+            self.encr = sqlite3.connect(f"/Users/{self.users}/.newpass/keys.db")
         else:
-            print("Failed to create database!")
+            print("Failed to connect to database!")
 
         self.cur = self.conn.cursor()
         self.d = self.encr.cursor()
 
         self.key = self.d.execute("SELECT key FROM encry_key").fetchone()[0]
         self.token = self.d.execute("SELECT token FROM salt").fetchone()[0]
-    
+
     def getMasterPassw(self):
         passw = self.cur.execute("SELECT password FROM users WHERE username=?", (self.users,)).fetchone()
         
@@ -42,6 +44,8 @@ class passwordManager:
         passwd = Fernet(self.key).encrypt(passwword.encode())
 
         self.cur.execute("INSERT INTO passwords VALUES (?, ?, ?, ?)", (site, username, email, passwd))
+
+        print("Values inserted into database!")
 
     def viewPass(self):
         site = input("Enter site name: ")
@@ -144,56 +148,4 @@ class passwordManager:
         self.encr.close()
 
 if __name__ == "__main__":
-    run = passwordManager()
-    print("1. Get password\t", "2. Load new password\t", "3. Generate new password") 
-    print("4. Get username\t", "5. Get email address\t", "6. Delete Password")
-    print("7. Edit password\n")
-    menu = int(input("Enter option: "))
-
-    password = run.PassHash()
-    user = os.getlogin()
-
-    if menu == 1:
-        if password == run.getMasterPassw():
-            run.viewPass()
-        else: 
-            print(f"Incorrect password for {user}")
-
-    elif menu == 2:
-        if password == run.getMasterPassw():
-            run.loadPass()
-        else: 
-            print(f"Incorrect password for {user}")
-    
-    elif menu == 3:
-        if password == run.getMasterPassw():
-            run.generatePass()
-        else: 
-            print(f"Incorrect password for {user}")
-    
-    elif menu == 4:
-        if password == run.getMasterPassw():
-            run.getUsername()
-        else: 
-            print(f"Incorrect password for {user}")
-    
-    elif menu == 5:
-        if password == run.getMasterPassw():
-            run.getEmail()
-        else:
-            print(f"Incorrect password for {user}")
-    
-    elif menu == 6:
-        if password == run.getMasterPassw():
-            run.deletePs()
-        else:
-            print(f"Incorrect password for {user}")
-    elif menu == 7:
-        if password == run.getMasterPassw():
-            run.editEntry()
-        else:
-            print(f"Incorrect password for {user}")
-    else:
-        raise NotImplementedError("Code not correctly implemented!")
-
-    run.closeCommit()
+    passwordManager()

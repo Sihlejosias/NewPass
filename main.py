@@ -1,32 +1,59 @@
 #Import Tkinter here
-import hashlib
 from getpass import getpass 
 import os
 from pw import passwordManager
 
-class PMGUI:
-    def __init__(none):
-        print("1. Get password\t", "2. Load new password: ")
-        menu = int(input("Enter option: "))
+run = passwordManager()
 
-        if menu == 1:
-            password = hashlib.sha256(getpass(f"Password for {os.getlogin()}: ").encode("utf-8")).hexdigest()
+print("1. Get password\t", "2. Load new password\t", "3. Generate new password") 
+print("4. Get username\t", "5. Get email address\t", "6. Delete Password")
+print("7. Edit password\n")
+menu = int(input("Enter option: "))
 
-            if password == passwordManager.getMasterPassw(none):
-                passwordManager.viewPass()
-            else: 
-                print(f"Incorrect password for {os.getlogin()}")
+password = run.PassHash()
+user = os.getlogin()
 
-        elif menu == 2:
-            password = hashlib.sha256(getpass(f"Password for {os.getlogin()}: ").encode("utf-8")).hexdigest()
+if menu == 1:
+    if password == run.getMasterPassw():
+        run.viewPass()
+    else: 
+        print(f"Incorrect password for {user}")
 
-            if password == passwordManager.getMasterPassw():
-                passwordManager.loadPass()
-            else: 
-                print(f"Incorrect password for {os.getlogin()}")
-            
-        else:
-            print("Invalid option!")
+elif menu == 2:
+    if password == run.getMasterPassw():
+        run.loadPass()
+    else: 
+        print(f"Incorrect password for {user}")
+    
+elif menu == 3:
+    if password == run.getMasterPassw():
+        run.generatePass()
+    else: 
+        print(f"Incorrect password for {user}")
+    
+elif menu == 4:
+    if password == run.getMasterPassw():
+        run.getUsername()
+    else: 
+        print(f"Incorrect password for {user}")
+    
+elif menu == 5:
+    if password == run.getMasterPassw():
+        run.getEmail()
+    else:
+        print(f"Incorrect password for {user}")
+    
+elif menu == 6:
+    if password == run.getMasterPassw():
+        run.deletePs()
+    else:
+        print(f"Incorrect password for {user}")
+elif menu == 7:
+    if password == run.getMasterPassw():
+        run.editEntry()
+    else:
+        print(f"Incorrect password for {user}")
+else:
+    raise NotImplementedError("Code not correctly implemented!")
 
-if __name__ == "__main__":
-    run = PMGUI()
+run.closeCommit()

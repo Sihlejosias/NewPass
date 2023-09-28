@@ -14,7 +14,7 @@ With setup.py you will be required to setup a master password and the initial se
 
 #### Therefore, run to add, delete and modify 
 
-        python pw.py
+        python main.py
 
 # Features 
 [x] Login  
@@ -29,7 +29,7 @@ With setup.py you will be required to setup a master password and the initial se
 [x] Edit password  
 [x] Edit username  
 [x] Edite Email  
-[ ] Main
+[x] Main
 [ ] GUI (graphical user interface)  
 [ ] autofil  
 
