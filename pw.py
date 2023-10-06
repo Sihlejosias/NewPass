@@ -11,18 +11,19 @@ import os
 class passwordManager:
     def __init__(self):
         self.users = os.getlogin()
-    
-        if platform == "linux":
-            self.conn = sqlite3.connect(f"/home/{self.users}/.config/passdb.db")
-            self.encr = sqlite3.connect(f"/home/{self.users}/.config/keys.db")
-        elif platform == "win32":
-            self.conn = sqlite3.connect("C:\Programs/.newpass/passdb.db")
-            self.encr = sqlite3.connect("C:\Programs/.newpass/keys.db")
-        elif platform == "darwin":
-            self.conn = sqlite3.connect(f"/Users/{self.users}/.newpass/passdb.db")
-            self.encr = sqlite3.connect(f"/Users/{self.users}/.newpass/keys.db")
-        else:
-            print("Failed to connect to database!")
+
+        match platform:
+            case "linux":
+                self.conn = sqlite3.connect(f"/home/{self.users}/.config/passdb.db")
+                self.encr = sqlite3.connect(f"/home/{self.users}/.config/keys.db")
+            case "win32":
+                self.conn = sqlite3.connect("C:\Programs/.newpass/passdb.db")
+                self.encr = sqlite3.connect("C:\Programs/.newpass/keys.db")
+            case "darwin":
+                self.conn = sqlite3.connect(f"/Users/{self.users}/.newpass/passdb.db")
+                self.encr = sqlite3.connect(f"/Users/{self.users}/.newpass/keys.db")
+            case _:
+                print("Failed to connect to database!")
 
         self.cur = self.conn.cursor()
         self.d = self.encr.cursor()
