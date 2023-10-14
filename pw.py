@@ -1,6 +1,9 @@
+#!/usr/bin/env python
+
 from cryptography.fernet import Fernet
 from getpass import getpass
 from sys import platform
+from time import sleep
 import pyperclip
 import hashlib
 import sqlite3
@@ -8,7 +11,7 @@ import string
 import secrets
 import os
 
-class passwordManager:
+class PasswordManager:
     def __init__(self):
         self.users = os.getlogin()
 
@@ -31,89 +34,91 @@ class passwordManager:
         self.key = self.d.execute("SELECT key FROM encry_key").fetchone()[0]
         self.token = self.d.execute("SELECT token FROM salt").fetchone()[0]
 
-    def getMasterPassw(self):
+    def getmasterpassw(self):
         passw = self.cur.execute("SELECT password FROM users WHERE username=?", (self.users,)).fetchone()
         
         return passw[0]
 
-    def loadPass(self):
-        site = input("Enter site name: ")
-        username = input("Enter site username: ")
-        email = input("Enter email: ")
-        passwword = getpass("Enter site password: ")
+    def loadpass(self):
+        site = input("Website name: ")
+        username = input("Username: ")
+        email = input("Email: ")
+        password = getpass("Password: ")
 
-        passwd = Fernet(self.key).encrypt(passwword.encode())
+        passwd = Fernet(self.key).encrypt(password.encode())
 
         self.cur.execute("INSERT INTO passwords VALUES (?, ?, ?, ?)", (site, username, email, passwd))
 
         print("Values inserted into database!")
 
-    def viewPass(self):
-        site = input("Enter site name: ")
+    def viewpass(self):
+        site = input("Website name: ")
         if site == "":
-            print("Please enter site name!")
+            print("Please enter website name!")
         else:
             getPassword = self.cur.execute('SELECT password FROM passwords WHERE site=(?)', (site,)).fetchone()[0]
-            passwrd = Fernet(self.key).decrypt(getPassword).decode()
+            password = Fernet(self.key).decrypt(getPassword).decode()
 
-            pyperclip.copy(passwrd)
+            pyperclip.copy(password)
+            print("Password temporary copied to clipboard! You have approcimatly 60 seconds to use it")
+            sleep(60)
+            pyperclip.copy(" ")
+            print("Clipboard cleared.")
 
-            print("Password temporary copied to clipboard!!")
-
-    def generatePass(self):
+    def generatepass(self):
         site = input("Website name: ")
         username = input("Username: ")
-        email = input("Email address: ")
-        lenth = input("How long: ")
+        email = input("Email: ")
+        length = input("How long: ")
 
         char = string.ascii_letters + string.digits + string.punctuation
-        if lenth == '':
+        if length == '':
             genPass = "".join(secrets.choice(char) for i in range(8))
         else:
-            lenth = int(lenth)
-            genPass = "".join(secrets.choice(char) for i in range(lenth))
+            length = int(length)
+            genPass = "".join(secrets.choice(char) for i in range(length))
 
-        pas = Fernet(self.key).encrypt(genPass.encode())
-        self.cur.execute("INSERT INTO passwords VALUES (?, ?, ?, ?)", (site, username, email, pas))
+        password = Fernet(self.key).encrypt(genPass.encode())
+        self.cur.execute("INSERT INTO passwords VALUES (?, ?, ?, ?)", (site, username, email, password))
 
         print(f"Generated password for website {site} with username {username} is {genPass}")
 
-    def getUsername(self):
-        site = input("Enter site name: ")
+    def getusername(self):
+        site = input("Website name: ")
         if site == "":
-            print("Please enter site name!")
+            print("Please enter website name!")
         else:
             getUser = self.cur.execute('SELECT username FROM passwords WHERE site=(?)', (site,)).fetchone()[0]
 
             print(f"Username for {site}: {getUser}")
     
-    def getEmail(self):
-        site = input("Enter site name: ")
+    def getemail(self):
+        site = input("Webite name: ")
         if site == "":
-            print("Please enter site name!")
+            print("Please enter website name!")
         else:
             getmail = self.cur.execute('SELECT email FROM passwords WHERE site=(?)', (site,)).fetchone()[0]
 
             print(f"Username for {site}: {getmail}")
 
-    def deletePs(self):
-        site  = input("Enter site name: ")
+    def deleteps(self):
+        site  = input("Website name: ")
         if site  == "":
-            print("PLease enter site name!")
+            print("PLease enter website name!")
         else:
             self.cur.execute("DELETE FROM passwords WHERE site=(?)", (site,)).fetchone()[0]
 
             print(f'User informtion for {site} have been deleted')
 
-    def editEntry(self):
-        site = input("Enter site name: ")
+    def editentry(self):
+        site = input("Website name: ")
         if site == "":
-            print("Please enter site name!")
+            print("Please enter website name!")
         else:
             username = input("Update username: ")
             if username == "":
                 old = self.cur.execute("SELECT username FROM passwords WHERE site=(?)", (site,)).fetchone()[0]
-                print(f"Userneme: {old} not changed!")
+                print(f"Username: {old} not changed!")
             else:
                 self.cur.execute("UPDATE passwords SET username=(?) WHERE site=(?)", (username, site))
                 print("Username Updated!")
@@ -125,6 +130,7 @@ class passwordManager:
             else:
                 self.cur.execute("UPDATE passwords SET email=(?) WHERE site=(?)", (email, site))
                 print("Email Address Updated!")
+            
             password = getpass("Update passowrd: ")
             if password == "":
                 print(f"Password not changed!")
@@ -142,11 +148,16 @@ class passwordManager:
         
         return password
 
-    def closeCommit(self):
+    def closecommit(self):
         self.conn.commit()
         self.encr.commit()
         self.conn.close()
         self.encr.close()
 
+    def commoncheker(self):
+        #This fucntion checks if a passwork have been found in any of the leaked 
+        # cridential stuffing attacks 
+        pass
+
 if __name__ == "__main__":
-    passwordManager()
+    PasswordManager()

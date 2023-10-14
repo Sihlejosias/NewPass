@@ -10,7 +10,7 @@ Light offline password manager, written in python. Using SQLite database, encryp
 #### For the first time use run
         python setup.py 
 
-With setup.py you will be required to setup a master password and the initial setup. then it will run main.py automatically. 
+With setup.py you will be required to set up a master password and the initial set up. then it will run main.py automatically. 
 
 #### Therefore, run to add, delete and modify 
 
@@ -24,12 +24,12 @@ With setup.py you will be required to setup a master password and the initial se
 [x] Password Generator  
 [x] copy password to clipboard  
 [x] get username  
-[x] get emial  
+[x] get email  
 [x] delete passwords  
 [x] Edit password  
 [x] Edit username  
-[x] Edite Email  
-[x] Main
+[x] Edit Email  
+[x] Main  
 [ ] GUI (graphical user interface)  
 [ ] autofil  
 
