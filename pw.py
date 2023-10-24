@@ -17,8 +17,8 @@ class PasswordManager:
 
         match platform:
             case "linux":
-                self.conn = sqlite3.connect(f"/home/{self.users}/.config/passdb.db")
-                self.encr = sqlite3.connect(f"/home/{self.users}/.config/keys.db")
+                self.conn = sqlite3.connect(f"/home/{self.users}/.config/newpass/passdb.db")
+                self.encr = sqlite3.connect(f"/home/{self.users}/.config/newpass/keys.db")
             case "win32":
                 self.conn = sqlite3.connect("C:\Programs/.newpass/passdb.db")
                 self.encr = sqlite3.connect("C:\Programs/.newpass/keys.db")
@@ -140,7 +140,7 @@ class PasswordManager:
                 self.cur.execute("UPDATE passwords SET password=(?) WHERE site=(?)", (hashPas, site))
                 print("Password Updated!")
 
-    def PassHash(self):
+    def passhash(self):
         
         password = getpass("Master Password: ")
         password += self.token
@@ -158,6 +158,3 @@ class PasswordManager:
         #This fucntion checks if a passwork have been found in any of the leaked 
         # cridential stuffing attacks 
         pass
-
-if __name__ == "__main__":
-    PasswordManager()

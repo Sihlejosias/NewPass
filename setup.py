@@ -1,7 +1,10 @@
+#!/usr/bin/env python
+
 from sys import platform
 from cryptography.fernet import Fernet
 from getpass import getpass
 from subprocess import run, PIPE
+from setuptools import setup
 import os
 import hashlib
 import sqlite3
@@ -22,8 +25,12 @@ class setup:
 
         match platform:
             case "linux":
-                self.conn = sqlite3.connect(f"/home/{self.users}/.config/passdb.db")
-                self.encr = sqlite3.connect(f"/home/{self.users}/.config/keys.db")
+                folder = run(("mkdir", f"/home/{self.users}/.config/newpass"), stdout=PIPE, stderr=PIPE)
+                if folder.returncode == 0:
+                    self.conn = sqlite3.connect(f"/home/{self.users}/.config/newpass/passdb.db")
+                    self.encr = sqlite3.connect(f"/home/{self.users}/.config/newpass/keys.db")
+                else:
+                    print(folder.stderr)
             case "win32":
                 folder = run(("mkdir", "C:\Programes\.newpass"), stdout=PIPE, stderr=PIPE)
                 if folder.returncode == 0:
@@ -65,11 +72,34 @@ class setup:
         self.encr.commit()
         self.conn.close()
         self.encr.close()
+    
+    def selfdelete():
+        try:
+            run(("rm", "setup.py"), stdin=PIPE, stderr=PIPE)
+        except:
+            print("Could not delete file!")
 
-if __name__ == "__main__":
+    def requirements():
+        # This function still needs work and testing
+        setup(
+            name='newpass',
+            long_description=open('README.md').read(),
+            long_dedcription_content_type="text/markdown",
+            install_requires=[
+                'pyperclip',
+                'cryptography',
+            ],
+        )
+    
+def call():
     run = setup()
+    # run.requirements()
     run.db()
     run.createMaster()
     run.keySetup()
     run.closeCommit()
     print("Successfully Setup and ready!!")
+    # run.selfdelete()
+
+if __name__ == "__main__":
+    call()
