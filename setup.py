@@ -1,27 +1,45 @@
 #!/usr/bin/env python
-
-from sys import platform
+from subprocess import run, PIPE
+from sys import platform, exit
 from cryptography.fernet import Fernet
 from getpass import getpass
-from subprocess import run, PIPE
-from setuptools import setup
 import os
 import hashlib
 import sqlite3
 import secrets
 import random
 
+def requirements():
+    getRequirments = run(("pip", "install", "-r", "requirements.txt"), stdout=PIPE, stderr=PIPE)
+    if getRequirments.returncode == 0:
+        print("requirements have been installed or requiments have been met!")
+    else: 
+        print(getRequirments.stderr) 
+
+def venvf():
+    venv = run(("python", "-m", "venv", "env"), stdout=PIPE, stderr=PIPE)
+
+    if venv.returncode == 0:
+       print("After, a it's done! Please type -source env/bin/activate")
+    else:
+        print(venv.stderr)
+
 class setup:
     def __init__(self):
         self.users = os.getlogin() 
         self.token = secrets.token_hex(random.randrange(8, 512))
-        getPs1 = getpass("Create master password: ")
-        getPs1 += self.token
-        getPs2 = getpass("Confirm master password: ")
-        getPs2 += self.token
-        self.master_password1 = hashlib.sha512(getPs1.encode("utf-8")).hexdigest()   
-        self.master_password2 = hashlib.sha512(getPs2.encode("utf-8")).hexdigest()
+        self.getPs1 = getpass("Create master password: ")
+        self.getPs1 += self.token
+        self.getPs2 = getpass("Confirm master password: ")
+        self.getPs2 += self.token
         self.key = None
+
+        if self.getPs1 != self.getPs2:
+            print("Master password entered doesn't match! Please try again........")
+            
+            exit()
+        else:
+            self.master_password1 = hashlib.sha512(self.getPs2.encode("utf-8")).hexdigest()   
 
         match platform:
             case "linux":
@@ -49,20 +67,14 @@ class setup:
                 print("Failed to create database!")
 
     def db(self):
-        self.cur = self.conn.cursor()
+        self.cur = self.conn.cursor().execute("""CREATE TABLE IF NOT EXISTS users (username text NOT NULL, password text NOT NULL)""")
         self.d = self.encr.cursor()
-        self.cur.execute("""CREATE TABLE IF NOT EXISTS users (username text NOT NULL, password text NOT NULL)""")
         self.d.execute("""CREATE TABLE IF NOT EXISTS encry_key (key text NOT NULL)""")
         self.d.execute("""CREATE TABLE IF NOT EXISTS salt (token text NOT NULL)""")
         self.cur.execute(""" CREATE TABLE IF NOT EXISTS passwords (site text NOT NULL, username text NOT NULL, email text, password text NOT NULL)""")
+        self.cur.execute('INSERT INTO users VALUES (?, ?)', (self.users, self.master_password1))
+        self.d.execute('INSERT INTO salt VALUES (?)', (self.token,))
 
-    def createMaster(self):
-        if self.master_password1 != self.master_password2:
-            print("Master password entered doesn't match! Please try again........")
-        else:
-            self.cur.execute('INSERT INTO users VALUES (?, ?)', (self.users, self.master_password1))
-            self.d.execute('INSERT INTO salt VALUES (?)', (self.token,))
-        
     def keySetup(self):
         self.key = Fernet.generate_key()
         self.d.execute('INSERT INTO encry_key VALUES (?)', (self.key,))
@@ -73,33 +85,21 @@ class setup:
         self.conn.close()
         self.encr.close()
     
-    def selfdelete():
-        try:
-            run(("rm", "setup.py"), stdin=PIPE, stderr=PIPE)
-        except:
-            print("Could not delete file!")
+def selfdelete():
+    try:
+        selfd = run(("rm", "setup.py"), stdin=PIPE, stderr=PIPE)
+    except:
+        print(selfd.stderr)    
 
-    def requirements():
-        # This function still needs work and testing
-        setup(
-            name='newpass',
-            long_description=open('README.md').read(),
-            long_dedcription_content_type="text/markdown",
-            install_requires=[
-                'pyperclip',
-                'cryptography',
-            ],
-        )
-    
 def call():
-    run = setup()
-    # run.requirements()
-    run.db()
-    run.createMaster()
-    run.keySetup()
-    run.closeCommit()
+    sets = setup()
+    sets.db()
+    sets.keySetup()
+    sets.closeCommit()
     print("Successfully Setup and ready!!")
-    # run.selfdelete()
+    # selfdelete()
 
 if __name__ == "__main__":
-    call()
+    venvf()
+    # requirements()
+    # call()
