@@ -6,14 +6,17 @@ Light offline password manager, written in python. Using SQLite database, encryp
         git clone https://github.com/Sihlejosias/Newpass.git
         cd Newpass 
 
+### Create a virtual environment and activate
+        python -m vnev env
+        source env/bin/activate
+
 #### For the first time use run
         python setup.py 
 
-With setup.py you will be required to set up a master password and the initial set up. then it will run main.py automatically. 
+With setup.py you will be required to set up a master password and the initial set up. 
 
 #### Therefore, run to add, delete and modify 
         chmod +x main.py
-        source venv/bin/activate
         ./main.py [options]
 
 #### Avaliable options

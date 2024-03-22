@@ -8,7 +8,7 @@ run = PasswordManager()
 
 user = os.getlogin()
 
-def call(val):
+def call(val) -> None:
     password = run.passhash() 
     if password == run.getmasterpassw():
         val()

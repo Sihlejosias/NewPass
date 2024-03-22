@@ -9,23 +9,8 @@ import sqlite3
 import secrets
 import random
 
-def requirements():
-    getRequirments = run(("pip", "install", "-r", "requirements.txt"), stdout=PIPE, stderr=PIPE)
-    if getRequirments.returncode == 0:
-        print("requirements have been installed or requiments have been met!")
-    else: 
-        print(getRequirments.stderr) 
-
-def venvf():
-    venv = run(("python", "-m", "venv", "env"), stdout=PIPE, stderr=PIPE)
-
-    if venv.returncode == 0:
-       print("After, a it's done! Please type -source env/bin/activate")
-    else:
-        print(venv.stderr)
-
 class setup:
-    def __init__(self):
+    def __init__(self) -> None:
         self.users = os.getlogin() 
         self.token = secrets.token_hex(random.randrange(8, 512))
         self.getPs1 = getpass("Create master password: ")
@@ -66,40 +51,57 @@ class setup:
             case _:
                 print("Failed to create database!")
 
-    def db(self):
-        self.cur = self.conn.cursor().execute("""CREATE TABLE IF NOT EXISTS users (username text NOT NULL, password text NOT NULL)""")
-        self.d = self.encr.cursor()
-        self.d.execute("""CREATE TABLE IF NOT EXISTS encry_key (key text NOT NULL)""")
-        self.d.execute("""CREATE TABLE IF NOT EXISTS salt (token text NOT NULL)""")
-        self.cur.execute(""" CREATE TABLE IF NOT EXISTS passwords (site text NOT NULL, username text NOT NULL, email text, password text NOT NULL)""")
-        self.cur.execute('INSERT INTO users VALUES (?, ?)', (self.users, self.master_password1))
-        self.d.execute('INSERT INTO salt VALUES (?)', (self.token,))
+    def db(self) -> None:
+        try:
+            self.cur = self.conn.cursor().execute("""CREATE TABLE IF NOT EXISTS users (username text NOT NULL, password text NOT NULL)""")
+            self.d = self.encr.cursor()
+            self.d.execute("""CREATE TABLE IF NOT EXISTS encry_key (key text NOT NULL)""")
+            self.d.execute("""CREATE TABLE IF NOT EXISTS salt (token text NOT NULL)""")
+            self.cur.execute(""" CREATE TABLE IF NOT EXISTS passwords (site text NOT NULL, username text NOT NULL, email text, password text NOT NULL)""")
+            self.cur.execute('INSERT INTO users VALUES (?, ?)', (self.users, self.master_password1))
+            self.d.execute('INSERT INTO salt VALUES (?)', (self.token,))
+        except ValueError:
+            print("Failed to create tables and Inserting values.")
 
-    def keySetup(self):
-        self.key = Fernet.generate_key()
-        self.d.execute('INSERT INTO encry_key VALUES (?)', (self.key,))
-    
-    def closeCommit(self):
-        self.conn.commit()
-        self.encr.commit()
-        self.conn.close()
-        self.encr.close()
-    
-def selfdelete():
-    try:
-        selfd = run(("rm", "setup.py"), stdin=PIPE, stderr=PIPE)
-    except:
-        print(selfd.stderr)    
+    def keySetup(self) -> None:
+        try:
+            self.key = Fernet.generate_key()
+            self.d.execute('INSERT INTO encry_key VALUES (?)', (self.key,))
+        except:
+            print("Could not generate key.")
 
-def call():
+    def closeCommit(self) -> None:
+        try: 
+            self.conn.commit()
+            self.encr.commit()
+            self.conn.close()
+            self.encr.close()
+        except:
+            print("Could not commit and close to database.")
+    
+    def selfdelete(self) -> None:
+        selfd = run(("rm", "setup.py"), stdout=PIPE, stderr=PIPE)
+        if selfd.returncode == 0:
+            print("Successcully deleted." + selfd.stdout)
+        else:
+            print(selfd.stderr)    
+
+def main() -> None:
     sets = setup()
     sets.db()
     sets.keySetup()
     sets.closeCommit()
     print("Successfully Setup and ready!!")
-    # selfdelete()
+    sets.selfdelete()
 
 if __name__ == "__main__":
-    venvf()
-    # requirements()
-    # call()
+    getRequirments = run(("pip", "install", "-r", "requirements.txt"), stdout=PIPE, stderr=PIPE)
+    if getRequirments.returncode == 0: 
+        makeExec = run(("chmod", "+x", "main.py"), stdout=PIPE, stderr=PIPE)
+        if makeExec.returncode == 1:
+            print(makeExec.stderr)
+        else:
+            main()  
+    else:
+        print(getRequirments.stderr)
+        print("It's ideal to run this script in a isolated environment. Create one by typing: \'python -m venv env\' and \'source env/bin/activte\'.")

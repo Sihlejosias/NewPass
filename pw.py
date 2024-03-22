@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 from cryptography.fernet import Fernet
 from getpass import getpass
 from sys import platform
@@ -10,9 +9,10 @@ import sqlite3
 import string
 import secrets
 import os
+from requests import get
 
 class PasswordManager:
-    def __init__(self):
+    def __init__(self) -> None:
         self.users = os.getlogin()
 
         match platform:
@@ -34,12 +34,12 @@ class PasswordManager:
         self.key = self.d.execute("SELECT key FROM encry_key").fetchone()[0]
         self.token = self.d.execute("SELECT token FROM salt").fetchone()[0]
 
-    def getmasterpassw(self):
+    def getmasterpassw(self) -> str:
         passw = self.cur.execute("SELECT password FROM users WHERE username=?", (self.users,)).fetchone()
         
         return passw[0]
 
-    def loadpass(self):
+    def loadpass(self) -> None:
         site = input("Website name: ")
         username = input("Username: ")
         email = input("Email: ")
@@ -51,7 +51,7 @@ class PasswordManager:
 
         print("Values inserted into database!")
 
-    def viewpass(self):
+    def viewpass(self) -> None:
         site = input("Website name: ")
         if site == "":
             print("Please enter website name!")
@@ -65,7 +65,7 @@ class PasswordManager:
             pyperclip.copy(" ")
             print("Clipboard cleared.")
 
-    def generatepass(self):
+    def generatepass(self) -> None:
         site = input("Website name: ")
         username = input("Username: ")
         email = input("Email: ")
@@ -76,14 +76,17 @@ class PasswordManager:
             genPass = "".join(secrets.choice(char) for i in range(8))
         else:
             length = int(length)
-            genPass = "".join(secrets.choice(char) for i in range(length))
+            if length < 8:
+                print("Password cannot be less than 8 charectors in length.")
+            else:
+                genPass = "".join(secrets.choice(char) for i in range(length))
 
         password = Fernet(self.key).encrypt(genPass.encode())
         self.cur.execute("INSERT INTO passwords VALUES (?, ?, ?, ?)", (site, username, email, password))
 
         print(f"Generated password for website {site} with username {username} is {genPass}")
 
-    def getusername(self):
+    def getusername(self) -> None:
         site = input("Website name: ")
         if site == "":
             print("Please enter website name!")
@@ -92,7 +95,7 @@ class PasswordManager:
 
             print(f"Username for {site}: {getUser}")
     
-    def getemail(self):
+    def getemail(self) -> None:
         site = input("Webite name: ")
         if site == "":
             print("Please enter website name!")
@@ -101,7 +104,7 @@ class PasswordManager:
 
             print(f"Username for {site}: {getmail}")
 
-    def deleteps(self):
+    def deleteps(self) -> None:
         site  = input("Website name: ")
         if site  == "":
             print("PLease enter website name!")
@@ -110,7 +113,7 @@ class PasswordManager:
 
             print(f'User informtion for {site} have been deleted')
 
-    def editentry(self):
+    def editentry(self) -> None:
         site = input("Website name: ")
         if site == "":
             print("Please enter website name!")
@@ -140,7 +143,7 @@ class PasswordManager:
                 self.cur.execute("UPDATE passwords SET password=(?) WHERE site=(?)", (hashPas, site))
                 print("Password Updated!")
 
-    def passhash(self):
+    def passhash(self) -> str:
         
         password = getpass("Master Password: ")
         password += self.token
@@ -148,13 +151,26 @@ class PasswordManager:
         
         return password
 
-    def closecommit(self):
+    def closecommit(self) -> None:
         self.conn.commit()
         self.encr.commit()
         self.conn.close()
         self.encr.close()
 
-    def commoncheker(self):
-        #This fucntion checks if a passwork have been found in any of the leaked 
-        # cridential stuffing attacks 
-        pass
+    def commoncheker(self, paswd: str) -> str:
+        #This fucntion checks if a password have been found in any of the data leaked 
+        # cridential stuffing attacks and other database on the darknet
+        prefix = paswd[:5]
+        suffix = paswd[5:]
+
+        response = get(f"https://api.pwnedpassowrds.com/range/{prefix}")
+
+        if response.status_code == 200:
+            suffixes = (line.split(":") for line in response.text.splitlines())
+            for suf, count in suffixes:
+                if suf == suffixes:
+                    return f"The password have been found {count} times in known breaches. It's not safe to use this password."
+                else:
+                    return "The password has not been found in known breaches"
+        else:
+            return "Failed to check Password. Try agian later."
