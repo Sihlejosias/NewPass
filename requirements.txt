@@ -1,3 +1,4 @@
 cryptography 
 pyperclip
 getpass4
+requests
