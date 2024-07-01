@@ -72,19 +72,22 @@ class PasswordManager:
         length = input("How long: ")
 
         char = string.ascii_letters + string.digits + string.punctuation
+        
+
         if length == '':
-            genPass = "".join(secrets.choice(char) for i in range(8))
-        else:
+            length = 12        
+        try:
             length = int(length)
-            if length < 8:
-                print("Password cannot be less than 8 charectors in length.")
-            else:
-                genPass = "".join(secrets.choice(char) for i in range(length))
+            if length < 12:
+                raise ValueError("Password cannot be less than 12 characters in length.")
+        except ValueError as e:
+            raise ValueError("Invalid input. Please enter a number.")
+
+        genPass = "".join(secrets.choice(char) for _ in range(length))
+        print(f"Generated password for website {site} with username {username} is {genPass}")
 
         password = Fernet(self.key).encrypt(genPass.encode())
         self.cur.execute("INSERT INTO passwords VALUES (?, ?, ?, ?)", (site, username, email, password))
-
-        print(f"Generated password for website {site} with username {username} is {genPass}")
 
     def getusername(self) -> None:
         site = input("Website name: ")
