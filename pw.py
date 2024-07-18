@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 from cryptography.fernet import Fernet
 from getpass import getpass
-from sys import platform
+from sys import platform, exit
 from time import sleep
-import pyperclip
+import pyperclip, random
 import hashlib
 import sqlite3
 import string
@@ -32,7 +32,7 @@ class PasswordManager:
         self.d = self.encr.cursor()
 
         self.key = self.d.execute("SELECT key FROM encry_key").fetchone()[0]
-        self.token = self.d.execute("SELECT token FROM salt").fetchone()[0]
+        self.token = self.d.execute("SELECT token FROM encry_key").fetchone()[0]
 
     def getmasterpassw(self) -> str:
         passw = self.cur.execute("SELECT password FROM users WHERE username=?", (self.users,)).fetchone()
@@ -69,21 +69,23 @@ class PasswordManager:
         site = input("Website name: ")
         username = input("Username: ")
         email = input("Email: ")
-        length = input("How long: ")
+        length = int(input("How long: "))
 
-        char = string.ascii_letters + string.digits + string.punctuation
-        
+        char = string.ascii_lowercase + string.ascii_uppercase + string.digits + string.punctuation        
 
         if length == '':
-            length = 12        
+            length = 20 
+
         try:
-            length = int(length)
+            # length = int(length)
             if length < 12:
                 raise ValueError("Password cannot be less than 12 characters in length.")
-        except ValueError as e:
-            raise ValueError("Invalid input. Please enter a number.")
-
+        except Exception:
+            print("Invalid type. Please enter a value equal/greater to 12")
+            exit()
+            
         genPass = "".join(secrets.choice(char) for _ in range(length))
+
         print(f"Generated password for website {site} with username {username} is {genPass}")
 
         password = Fernet(self.key).encrypt(genPass.encode())
@@ -177,3 +179,7 @@ class PasswordManager:
                     return "The password has not been found in known breaches"
         else:
             return "Failed to check Password. Try agian later."
+
+
+if __name__ == "__main__":
+    PasswordManager()

@@ -15,7 +15,7 @@ def call(val) -> None:
     else:
         print(f"Incorrect password for {user}")
 
-opts, args = getopt.getopt(sys.argv[1:], "lueEvgdm")
+opts, args = getopt.getopt(sys.argv[1:], "lueEvgdmh")
 
 for opt, arg in opts:
     match opt:
@@ -33,14 +33,14 @@ for opt, arg in opts:
             call(run.generatepass)
         case "-d":
             call(run.deleteps)
+        case "-h":
+            raise NotImplementedError("Documentation not been properly implemented yet. ")
         case "-m":
             print("1. Get password\t", "2. Load new password\t", "3. Generate new password") 
             print("4. Get username\t", "5. Get email address\t", "6. Delete Password")
             print("7. Edit password\n")
 
-            menu = int(input("Enter option: "))
-
-            match menu:
+            match int(input("Enter option(1 - 7): ")):
                 case 1:
                     call(run.viewpass)
                 case 2:
@@ -56,6 +56,8 @@ for opt, arg in opts:
                 case 7:
                     call(run.editentry)
                 case _:
-                    raise NotImplementedError("Invalid option selected, Please choose between 1 - 7")
+                    raise ValueError("Invalid option selected, please choose between 1 - 7!")
+        case _: 
+            print("Invalid option entered.")
 
 run.closecommit()
