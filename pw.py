@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 from cryptography.fernet import Fernet
 from getpass import getpass
-from sys import platform, exit
+from sys import platform
 from time import sleep
-import pyperclip, random
+import pyperclip
 import hashlib
 import sqlite3
 import string
@@ -15,29 +15,44 @@ class PasswordManager:
     def __init__(self) -> None:
         self.users = os.getlogin()
 
-        match platform:
-            case "linux":
-                self.conn = sqlite3.connect(f"/home/{self.users}/.config/newpass/passdb.db")
-                self.encr = sqlite3.connect(f"/home/{self.users}/.config/newpass/keys.db")
-            case "win32":
-                self.conn = sqlite3.connect("C:\Programs/.newpass/passdb.db")
-                self.encr = sqlite3.connect("C:\Programs/.newpass/keys.db")
-            case "darwin":
-                self.conn = sqlite3.connect(f"/Users/{self.users}/.newpass/passdb.db")
-                self.encr = sqlite3.connect(f"/Users/{self.users}/.newpass/keys.db")
-            case _:
-                print("Failed to connect to database!")
+        passdb_path, keysdb_path = self.get_db_paths()
+        
+        if passdb_path and keysdb_path:
+            try:
+                self.conn = sqlite3.connect(passdb_path)
+                self.encr = sqlite3.connect(keysdb_path)
 
-        self.cur = self.conn.cursor()
-        self.d = self.encr.cursor()
+                self.cur = self.conn.cursor()
+                self.d = self.encr.cursor()
+            except sqlite3.Error as e:
+                print(f"Failed to connect to database: {e}")
+        else:
+            print("Failed to determin database paths.")
 
         self.key = self.d.execute("SELECT key FROM encry_key").fetchone()[0]
         self.token = self.d.execute("SELECT token FROM encry_key").fetchone()[0]
-
+   
+    def get_db_paths(self) -> str:
+            match platform:
+                case "linux":
+                    base_path = f"/home/{self.users}/.config/newpass"
+                case "win32":
+                    base_path = f"C:\\Programs\\.newpass"
+                case "darwin":
+                    base_path = f"/Users/{self.users}/.newpass"
+                case _:
+                    print("Unsupported platform")
+                    return None, None
+            
+            return os.path.join(base_path, 'passdb.db'), os.path.join(base_path, 'keys.db')
+    
     def getmasterpassw(self) -> str:
         passw = self.cur.execute("SELECT password FROM users WHERE username=?", (self.users,)).fetchone()
         
         return passw[0]
+
+    def encryptPass(self, password: bytes) -> bytes:
+        return Fernet(self.key).encrypt(password.encode())
 
     def loadpass(self) -> None:
         site = input("Website name: ")
@@ -45,7 +60,7 @@ class PasswordManager:
         email = input("Email: ")
         password = getpass("Password: ")
 
-        passwd = Fernet(self.key).encrypt(password.encode())
+        passwd = self.encryptPass(password)
 
         self.cur.execute("INSERT INTO passwords VALUES (?, ?, ?, ?)", (site, username, email, passwd))
 
@@ -69,26 +84,25 @@ class PasswordManager:
         site = input("Website name: ")
         username = input("Username: ")
         email = input("Email: ")
-        length = int(input("How long: "))
+        length = input("How long: ")
 
         char = string.ascii_lowercase + string.ascii_uppercase + string.digits + string.punctuation        
 
         if length == '':
-            length = 20 
+            length = 20
 
         try:
-            # length = int(length)
+            length = int(length)
             if length < 12:
-                raise ValueError("Password cannot be less than 12 characters in length.")
+                print("Password cannot be less than 12 characters in length.")
         except Exception:
-            print("Invalid type. Please enter a value equal/greater to 12")
-            exit()
-            
+            raise TypeError("Invalid type. Please enter a value equal/greater to 12")  
+        
         genPass = "".join(secrets.choice(char) for _ in range(length))
 
         print(f"Generated password for website {site} with username {username} is {genPass}")
 
-        password = Fernet(self.key).encrypt(genPass.encode())
+        password = self.encryptPass(genPass)
         self.cur.execute("INSERT INTO passwords VALUES (?, ?, ?, ?)", (site, username, email, password))
 
     def getusername(self) -> None:
@@ -143,7 +157,7 @@ class PasswordManager:
             if password == "":
                 print(f"Password not changed!")
             else:
-                hashPas = Fernet(self.key).encrypt(password.encode())
+                hashPas = self.encryptPass(password)
 
                 self.cur.execute("UPDATE passwords SET password=(?) WHERE site=(?)", (hashPas, site))
                 print("Password Updated!")
